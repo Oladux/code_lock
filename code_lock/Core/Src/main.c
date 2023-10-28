@@ -106,6 +106,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         	}
         }
 }
+void DeleteKeyHandler(char* str){
+	password[input_index-1]='\0'; input_index-=1;
+
+	LCD_ClearDisplay();
+	LCD_WriteString(str, 1, 0);
+
+	keyboard_state=INPUT_STATE;
+
+	HAL_Delay(100);
+}
+void EnterKeyHandler(char* str){
+	password_size=input_index; input_index=0;
+	if (password_status=PASSWORD_UNSET){
+		password_status=PASSWORD_SET;
+	}
+
+	LCD_ClearDisplay();
+
+	keyboard_state=INPUT_STATE;
+
+	HAL_Delay(100);
+}
 /* USER CODE END 0 */
 
 /**
@@ -149,65 +171,49 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 if(access_status==ACCESS_GRANTED){
-		 LCD_WriteString("CMEX", 0, 0);
-	 }
-	 else{
-		switch (password_status) {
+		switch (access_status) {
 			case 0:
-				LCD_WriteString(welcome_message[0], 0, 0);
+				if(password_status==PASSWORD_SET){
+					LCD_WriteString("WELCOME", 0, 0);
+					HAL_Delay(1000);
+					access_status=ACCESS_GRANTED;
+				}
+				else{
+
+					LCD_WriteString(welcome_message[0], 0, 0);
+
 					if(keyboard_state==OUTPUT_STATE){
 						if(command_index==ENTER_COMMAND){
-							password_status=PASSWORD_SET;
-							password_size=input_index; input_index=0;
-							keyboard_state=INPUT_STATE;
-							LCD_ClearDisplay();
-							HAL_Delay(100);
+							EnterKeyHandler(password);
 							break;
 							}
-						if(command_index==DELETE_COMMAND){
-							password[input_index-1]='\0';
-							input_index-=1;
-							LCD_ClearDisplay();
-							LCD_WriteString(password, 1, 0);
-							keyboard_state=INPUT_STATE;
-							HAL_Delay(100);
+						 if(command_index==DELETE_COMMAND){
+							DeleteKeyHandler(password);
 							break;
 							}
 						command=commands[command_index]; password[input_index]=command;
 						input_index++;
+
 						LCD_WriteString(password, 1, 0);
+
 						keyboard_state=INPUT_STATE;
-						}
+				}
+				}
 				break;
 			case 1:
-					LCD_WriteString(input_message[0], 0, 0);
+				if(keyboard_state==OUTPUT_STATE){
+					input_index=(input_index+1)%2;
+					LCD_ClearDisplay();
 
-					if(keyboard_state==OUTPUT_STATE){
-						if(command_index==ENTER_COMMAND){
-							input_size=input_index;
-							input_index=0;
-							if (strcmp(password_input,password)==0){
-								keyboard_state=OUTPUT_STATE;
-								LCD_ClearDisplay();
-								LCD_WriteString("ACCESS GRANTED", 0, 0);
-								HAL_Delay(3000);
-								break;
-								}
-							else{
-								LCD_ClearDisplay();
-								LCD_WriteString("INVALID PASSWORD", 0, 0);
-								HAL_Delay(3000);
-								for(uint8_t i;i<=input_size;i++) password_input[i]==' ';
-								LCD_ClearDisplay();
-								break;
-								}
-								}
-						command=commands[command_index]; password_input[input_index]=command;
-						input_index++;
-						LCD_WriteString(password_input, 1, 0);
-						keyboard_state=INPUT_STATE;
+					LCD_WriteString("#", input_index, 0);
+					LCD_WriteString("Change password", input_index, 1);
+					if(command_index==ENTER_COMMAND){
+						EnterKeyHandler(password);
+						break;
 					}
+					keyboard_state=INPUT_STATE;
+
+				}
 				break;
 		}
 	 }
@@ -216,7 +222,6 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
 
 /**
   * @brief System Clock Configuration
