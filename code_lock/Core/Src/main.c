@@ -52,7 +52,7 @@ UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 
-uint8_t *input;
+uint8_t *input_command;
 uint8_t command_index=0;
 
 uint8_t password_size=0;
@@ -95,9 +95,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
         	if(keyboard_state==INPUT_STATE){
 				out_pin_change(out_pin_on);
-				input=input_scan();
+				input_command=input_scan();
 				for(uint8_t column=0;column<=3;column++){
-					if ((input[column]==1)){
+					if ((input_command[column]==1)){
 						command_index=((out_pin_on+1)*4-(column+1));
 						keyboard_state=OUTPUT_STATE;
 						}
