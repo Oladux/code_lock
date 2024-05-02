@@ -89,6 +89,7 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t out_pin_on=0;
+/* Input handler in callback  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
         if(htim->Instance == TIM2)
@@ -172,6 +173,7 @@ int main(void)
   while (1)
   {
 		switch (access_status) {
+		/* No access */
 			case 0:
 				if(password_status==PASSWORD_SET){
 					LCD_WriteString("WELCOME", 0, 0);
@@ -200,6 +202,7 @@ int main(void)
 				}
 				}
 				break;
+			/* Access granted */
 			case 1:
 				if(keyboard_state==OUTPUT_STATE){
 					input_index=(input_index+1)%2;
